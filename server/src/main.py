@@ -7,8 +7,23 @@ api = Api(app)
 class CreateUser(Resource):
     def post(self):
         try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('email', type=str)
+            parser.add_argument('user_name', type=str)
+            parser.add_argument('password', type=str)
+            args = parser.parse_args()
             
-            return {'status': 'success'}
+            _userEmail = args['email']
+            _userName = args['user_name']
+            _userPassword = args['password']
+            
+            return 
+            {
+                'Email': args['email'], 
+                'UserName': args['user_name'], 
+                'Password': args['password']
+            }
+            
         except Exception as e:
             return {'error':str(e)};
         
