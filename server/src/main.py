@@ -1,33 +1,52 @@
+#=========================================================
+# Package
+#=========================================================
 from flask import Flask
+from flask_cors  import CORS
 from flask_restful import Resource, Api, reqparse
+import datetime
+import csv
+
+#=========================================================
+# Custom Package
+#=========================================================
+import crawler
 
 app = Flask(__name__)
 api = Api(app)
 
-class CreateUser(Resource):
-    def post(self):
-        try:
-            parser = reqparse.RequestParser()
-            parser.add_argument('email', type=str)
-            parser.add_argument('user_name', type=str)
-            parser.add_argument('password', type=str)
-            args = parser.parse_args()
-            
-            _userEmail = args['email']
-            _userName = args['user_name']
-            _userPassword = args['password']
-            
-            return 
-            {
-                'Email': args['email'], 
-                'UserName': args['user_name'], 
-                'Password': args['password']
-            }
-            
-        except Exception as e:
-            return {'error':str(e)};
+"""
+
+"""
+
+last_updated = datetime.datetime.now().strftime('%Y-%m-%d');
+
+class Detail(Resource):
+    def get(self):
+        now = datetime.datetime.now()
         
-api.add_resource(CreateUser, '/user')
+        data = []
+        
+        #if last_updated is not now.strftime('%Y-%m-%d'):
+        #    data = crawler.update()
+        #else:
+        with open('../../static/csv/detail.csv', 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                data.append(row)
+        
+        print(data)
+       
+        return data;
+        
+api.add_resource(Detail, '/')
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    return response
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

@@ -12,6 +12,10 @@ import csv
 5. 장르로 Donut Charts
 6. 가사로 Word Cloud
 """
+
+chart_file_name = '../../static/csv/chart.csv'
+detail_file_name = '../../static/csv/detail.csv'
+
 def melon_chart():
     chart_url = 'http://www.melon.com/chart/index.htm'
     
@@ -31,7 +35,7 @@ def melon_chart():
     soup = BeautifulSoup(result.text, 'html.parser')
     melon_list = []
     
-    with open('../../static/csv/melon.csv','w') as csvFile:
+    with open(chart_file_name,'w') as csvFile:
         fieldnames = ['idx', 'tag', 'url']
         csv_writer = csv.DictWriter(csvFile, fieldnames=fieldnames)
         csv_writer.writeheader()
@@ -50,4 +54,57 @@ def melon_chart():
         
     return melon_list
 
-melon_chart()
+def melon_detail_crawl():
+        
+    # User-Agent를 넘겨주니까 된다.
+    headers = {
+        "Accept-Language": "ko",
+        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 5.1.1;)"
+    }
+    
+    columns = ['id', 'title', 'date', 'genre', 'lyric']
+
+    data = []
+
+    with open(chart_file_name, 'r') as csvfile:
+        csv_reader = csv.DictReader(csvfile)
+        for i, row in enumerate(csv_reader):
+            print(row)
+            result = requests.get(row.get('url'), headers=headers)
+            soup = BeautifulSoup(result.text, 'html.parser')
+            
+            detail = soup.select('#downloadfrm .list dd')
+            detail = list(map(filter_text, detail))
+    
+            lyric = soup.select('.lyric')[0].get_text().strip()
+            
+            print(detail)
+            print(data)
+            
+            data.append({})
+            
+            data[i][columns[0]] = i
+            data[i][columns[1]] = row.get('tag')
+            data[i][columns[2]] = detail[1]
+            data[i][columns[3]] = detail[2]
+            data[i][columns[4]] = lyric
+            
+    with open(detail_file_name, 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=columns)
+        writer.writeheader()
+        
+        for row in data:
+            writer.writerow(row)
+            
+def filter_text(text):
+    text = str(text)
+    count = int(text.count('<')/2) # Anyway It's Integer
+    
+    slice_start = text.find('>', count) + 1
+    slice_end = text.find('<', count)
+    
+    return text[slice_start:slice_end]
+
+def update():
+    melon_chart()
+    melon_detail_crawl()
