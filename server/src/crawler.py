@@ -108,3 +108,4 @@ def filter_text(text):
 def update():
     melon_chart()
     melon_detail_crawl()
+    
