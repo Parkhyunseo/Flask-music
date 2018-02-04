@@ -2,7 +2,6 @@
 # Package
 #=========================================================
 from flask import Flask
-from flask_cors  import CORS
 from flask_restful import Resource, Api, reqparse
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -14,10 +13,12 @@ import csv
 import time
 from collections import Counter
 
+import konlpy
 #=========================================================
 # Custom Package
 #=========================================================
 import crawler
+import lyrics
 
 app = Flask(__name__)
 api = Api(app)
@@ -74,6 +75,9 @@ def data_preprocess():
     global data
     global rank
     global genres
+    global words
+    
+    lyric = []
     
     data.clear()
     rank.clear()
@@ -85,6 +89,7 @@ def data_preprocess():
                 "id":row.get('id'),
                 "title":row.get('title')
             })
+            lyric.append(row.get('lyric'))
 
     genres.clear()
     
@@ -95,6 +100,9 @@ def data_preprocess():
             })
             
     print(genres)
+    
+    words.clear()
+    words = lyrics.get_frequency(lyric)
             
 # TODO :: to do job 
 def get_chart(test=False):
